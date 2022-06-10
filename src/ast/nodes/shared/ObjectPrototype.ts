@@ -16,12 +16,14 @@ const isInteger = (prop: ObjectPathKey): boolean => typeof prop === 'string' && 
 // will improve tree-shaking for out-of-bounds array properties
 const OBJECT_PROTOTYPE_FALLBACK: ExpressionEntity =
 	new (class ObjectPrototypeFallbackExpression extends ExpressionEntity {
-		deoptimizeArgumentsOnInteractionAtPath(
-			{ type, thisArg }: NodeInteraction,
-			path: ObjectPath
-		): void {
-			if (type === INTERACTION_CALLED && path.length === 1 && !isInteger(path[0])) {
-				thisArg?.deoptimizePath(UNKNOWN_PATH);
+		deoptimizeArgumentsOnInteractionAtPath(interaction: NodeInteraction, path: ObjectPath): void {
+			if (interaction.type === INTERACTION_CALLED && path.length === 1 && !isInteger(path[0])) {
+				interaction.thisArg?.deoptimizePath(UNKNOWN_PATH);
+				if ('args' in interaction) {
+					for (const arg of interaction.args) {
+						arg.deoptimizePath(UNKNOWN_PATH);
+					}
+				}
 			}
 		}
 

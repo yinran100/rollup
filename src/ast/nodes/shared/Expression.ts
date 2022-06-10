@@ -23,11 +23,16 @@ export class ExpressionEntity implements WritableEntity {
 	included = false;
 
 	deoptimizeArgumentsOnInteractionAtPath(
-		{ thisArg }: NodeInteraction,
+		interaction: NodeInteraction,
 		_path: ObjectPath,
 		_recursionTracker: PathTracker
 	): void {
-		thisArg!.deoptimizePath(UNKNOWN_PATH);
+		interaction.thisArg?.deoptimizePath(UNKNOWN_PATH);
+		if ('args' in interaction) {
+			for (const arg of interaction.args) {
+				arg.deoptimizePath(UNKNOWN_PATH);
+			}
+		}
 	}
 
 	deoptimizePath(_path: ObjectPath): void {}

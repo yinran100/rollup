@@ -26,6 +26,12 @@ export default abstract class CallExpressionBase extends NodeBase implements Deo
 		path: ObjectPath,
 		recursionTracker: PathTracker
 	): void {
+		// TODO Lukas refine
+		if ('args' in interaction) {
+			for (const arg of interaction.args) {
+				arg.deoptimizePath(UNKNOWN_PATH);
+			}
+		}
 		const { thisArg } = interaction;
 		const returnExpression = this.getReturnExpression(recursionTracker);
 		if (returnExpression === UNKNOWN_EXPRESSION) {

@@ -69,7 +69,13 @@ export default class LocalVariable extends Variable {
 		recursionTracker: PathTracker
 	): void {
 		if (this.isReassigned || !this.init) {
-			return interaction.thisArg?.deoptimizePath(UNKNOWN_PATH);
+			interaction.thisArg?.deoptimizePath(UNKNOWN_PATH);
+			if ('args' in interaction) {
+				for (const arg of interaction.args) {
+					arg.deoptimizePath(UNKNOWN_PATH);
+				}
+			}
+			return;
 		}
 		recursionTracker.withTrackedEntityAtPath(
 			path,

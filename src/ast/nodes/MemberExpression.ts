@@ -141,6 +141,11 @@ export default class MemberExpression extends NodeBase implements DeoptimizableE
 				);
 			} else {
 				interaction.thisArg?.deoptimizePath(UNKNOWN_PATH);
+				if ('args' in interaction) {
+					for (const arg of interaction.args) {
+						arg.deoptimizePath(UNKNOWN_PATH);
+					}
+				}
 			}
 		}
 	}
