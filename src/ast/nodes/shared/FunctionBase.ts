@@ -14,6 +14,7 @@ import {
 } from '../../NodeInteractions';
 import ReturnValueScope from '../../scopes/ReturnValueScope';
 import { type ObjectPath, PathTracker, UNKNOWN_PATH, UnknownKey } from '../../utils/PathTracker';
+import ParameterVariable from '../../variables/ParameterVariable';
 import BlockStatement from '../BlockStatement';
 import * as NodeType from '../NodeType';
 import RestElement from '../RestElement';
@@ -146,7 +147,9 @@ export default abstract class FunctionBase extends NodeBase {
 
 	initialise(): void {
 		this.scope.addParameterVariables(
-			this.params.map(param => param.declare('parameter', UNKNOWN_EXPRESSION)),
+			this.params.map(
+				param => param.declare('parameter', UNKNOWN_EXPRESSION) as ParameterVariable[]
+			),
 			this.params[this.params.length - 1] instanceof RestElement
 		);
 		if (this.body instanceof BlockStatement) {

@@ -1,6 +1,5 @@
-import { HasEffectsContext } from '../ExecutionContext';
 import { NodeInteraction } from '../NodeInteractions';
-import { type ExpressionEntity, UNKNOWN_EXPRESSION } from '../nodes/shared/Expression';
+import { type ExpressionEntity } from '../nodes/shared/Expression';
 import {
 	DiscriminatedPathTracker,
 	type ObjectPath,
@@ -59,20 +58,5 @@ export default class ParameterVariable extends LocalVariable {
 		for (const entity of this.entitiesToBeDeoptimized) {
 			entity.deoptimizePath(path);
 		}
-	}
-
-	hasEffectsOnInteractionAtPath(
-		path: ObjectPath,
-		interaction: NodeInteraction,
-		context: HasEffectsContext
-	): boolean {
-		return (
-			this.getInit(context).hasEffectsOnInteractionAtPath(path, interaction, context) ||
-			super.hasEffectsOnInteractionAtPath(path, interaction, context)
-		);
-	}
-
-	protected getInit(_context: HasEffectsContext): ExpressionEntity {
-		return UNKNOWN_EXPRESSION;
 	}
 }
