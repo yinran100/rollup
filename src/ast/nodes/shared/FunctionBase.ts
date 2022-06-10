@@ -10,8 +10,7 @@ import {
 	NODE_INTERACTION_UNKNOWN_ACCESS,
 	NODE_INTERACTION_UNKNOWN_CALL,
 	NodeInteraction,
-	NodeInteractionCalled,
-	NodeInteractionWithThisArg
+	NodeInteractionCalled
 } from '../../NodeInteractions';
 import ReturnValueScope from '../../scopes/ReturnValueScope';
 import { type ObjectPath, PathTracker, UNKNOWN_PATH, UnknownKey } from '../../utils/PathTracker';
@@ -38,22 +37,26 @@ export default abstract class FunctionBase extends NodeBase {
 	protected objectEntity: ObjectEntity | null = null;
 	private deoptimizedReturn = false;
 
+	deoptimizeArgumentsOnInteractionAtPath(
+		interaction: NodeInteraction,
+		path: ObjectPath,
+		recursionTracker: PathTracker
+	): void {
+		if (path.length > 0) {
+			this.getObjectEntity().deoptimizeArgumentsOnInteractionAtPath(
+				interaction,
+				path,
+				recursionTracker
+			);
+		}
+	}
+
 	deoptimizePath(path: ObjectPath): void {
 		this.getObjectEntity().deoptimizePath(path);
 		if (path.length === 1 && path[0] === UnknownKey) {
 			// A reassignment of UNKNOWN_PATH is considered equivalent to having lost track
 			// which means the return expression needs to be reassigned
 			this.scope.getReturnExpression().deoptimizePath(UNKNOWN_PATH);
-		}
-	}
-
-	deoptimizeThisOnInteractionAtPath(
-		interaction: NodeInteractionWithThisArg,
-		path: ObjectPath,
-		recursionTracker: PathTracker
-	): void {
-		if (path.length > 0) {
-			this.getObjectEntity().deoptimizeThisOnInteractionAtPath(interaction, path, recursionTracker);
 		}
 	}
 

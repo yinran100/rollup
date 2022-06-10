@@ -1,6 +1,6 @@
 import type MagicString from 'magic-string';
 import type { HasEffectsContext } from '../ExecutionContext';
-import type { NodeInteraction, NodeInteractionWithThisArg } from '../NodeInteractions';
+import type { NodeInteraction } from '../NodeInteractions';
 import { INTERACTION_ACCESSED } from '../NodeInteractions';
 import ModuleScope from '../scopes/ModuleScope';
 import type { ObjectPath, PathTracker } from '../utils/PathTracker';
@@ -17,21 +17,21 @@ export default class ThisExpression extends NodeBase {
 		this.variable = this.scope.findVariable('this');
 	}
 
-	deoptimizePath(path: ObjectPath): void {
-		this.variable.deoptimizePath(path);
-	}
-
-	deoptimizeThisOnInteractionAtPath(
-		interaction: NodeInteractionWithThisArg,
+	deoptimizeArgumentsOnInteractionAtPath(
+		interaction: NodeInteraction,
 		path: ObjectPath,
 		recursionTracker: PathTracker
 	): void {
 		// We rewrite the parameter so that a ThisVariable can detect self-mutations
-		this.variable.deoptimizeThisOnInteractionAtPath(
+		this.variable.deoptimizeArgumentsOnInteractionAtPath(
 			interaction.thisArg === this ? { ...interaction, thisArg: this.variable } : interaction,
 			path,
 			recursionTracker
 		);
+	}
+
+	deoptimizePath(path: ObjectPath): void {
+		this.variable.deoptimizePath(path);
 	}
 
 	hasEffectsOnInteractionAtPath(

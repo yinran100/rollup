@@ -7,8 +7,7 @@ import {
 	NO_ARGS,
 	NODE_INTERACTION_UNKNOWN_CALL,
 	NodeInteraction,
-	NodeInteractionCalled,
-	NodeInteractionWithThisArg
+	NodeInteractionCalled
 } from '../../NodeInteractions';
 import {
 	EMPTY_PATH,
@@ -33,21 +32,13 @@ export default class MethodBase extends NodeBase implements DeoptimizableEntity 
 
 	private accessedValue: ExpressionEntity | null = null;
 
-	// As getter properties directly receive their values from fixed function
-	// expressions, there is no known situation where a getter is deoptimized.
-	deoptimizeCache(): void {}
-
-	deoptimizePath(path: ObjectPath): void {
-		this.getAccessedValue().deoptimizePath(path);
-	}
-
-	deoptimizeThisOnInteractionAtPath(
-		interaction: NodeInteractionWithThisArg,
+	deoptimizeArgumentsOnInteractionAtPath(
+		interaction: NodeInteraction,
 		path: ObjectPath,
 		recursionTracker: PathTracker
 	): void {
 		if (interaction.type === INTERACTION_ACCESSED && this.kind === 'get' && path.length === 0) {
-			return this.value.deoptimizeThisOnInteractionAtPath(
+			return this.value.deoptimizeArgumentsOnInteractionAtPath(
 				{
 					args: NO_ARGS,
 					thisArg: interaction.thisArg,
@@ -59,7 +50,7 @@ export default class MethodBase extends NodeBase implements DeoptimizableEntity 
 			);
 		}
 		if (interaction.type === INTERACTION_ASSIGNED && this.kind === 'set' && path.length === 0) {
-			return this.value.deoptimizeThisOnInteractionAtPath(
+			return this.value.deoptimizeArgumentsOnInteractionAtPath(
 				{
 					args: interaction.args,
 					thisArg: interaction.thisArg,
@@ -70,7 +61,19 @@ export default class MethodBase extends NodeBase implements DeoptimizableEntity 
 				recursionTracker
 			);
 		}
-		this.getAccessedValue().deoptimizeThisOnInteractionAtPath(interaction, path, recursionTracker);
+		this.getAccessedValue().deoptimizeArgumentsOnInteractionAtPath(
+			interaction,
+			path,
+			recursionTracker
+		);
+	}
+
+	// As getter properties directly receive their values from fixed function
+	// expressions, there is no known situation where a getter is deoptimized.
+	deoptimizeCache(): void {}
+
+	deoptimizePath(path: ObjectPath): void {
+		this.getAccessedValue().deoptimizePath(path);
 	}
 
 	getLiteralValueAtPath(

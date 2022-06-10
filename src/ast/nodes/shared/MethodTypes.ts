@@ -5,8 +5,7 @@ import {
 	NODE_INTERACTION_UNKNOWN_ASSIGNMENT,
 	NODE_INTERACTION_UNKNOWN_CALL,
 	NodeInteraction,
-	NodeInteractionCalled,
-	NodeInteractionWithThisArg
+	NodeInteractionCalled
 } from '../../NodeInteractions';
 import { EMPTY_PATH, type ObjectPath, UNKNOWN_INTEGER_PATH } from '../../utils/PathTracker';
 import {
@@ -35,12 +34,12 @@ export class Method extends ExpressionEntity {
 		super();
 	}
 
-	deoptimizeThisOnInteractionAtPath(
-		{ type, thisArg }: NodeInteractionWithThisArg,
+	deoptimizeArgumentsOnInteractionAtPath(
+		{ type, thisArg }: NodeInteraction,
 		path: ObjectPath
 	): void {
 		if (type === INTERACTION_CALLED && path.length === 0 && this.description.mutatesSelfAsArray) {
-			thisArg.deoptimizePath(UNKNOWN_INTEGER_PATH);
+			thisArg?.deoptimizePath(UNKNOWN_INTEGER_PATH);
 		}
 	}
 

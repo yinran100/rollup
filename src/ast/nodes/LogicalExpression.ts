@@ -10,7 +10,6 @@ import {
 import { removeAnnotations } from '../../utils/treeshakeNode';
 import type { DeoptimizableEntity } from '../DeoptimizableEntity';
 import type { HasEffectsContext, InclusionContext } from '../ExecutionContext';
-import type { NodeInteractionWithThisArg } from '../NodeInteractions';
 import { NodeInteraction, NodeInteractionCalled } from '../NodeInteractions';
 import {
 	EMPTY_PATH,
@@ -41,6 +40,15 @@ export default class LogicalExpression extends NodeBase implements Deoptimizable
 	private isBranchResolutionAnalysed = false;
 	private usedBranch: ExpressionNode | null = null;
 
+	deoptimizeArgumentsOnInteractionAtPath(
+		interaction: NodeInteraction,
+		path: ObjectPath,
+		recursionTracker: PathTracker
+	): void {
+		this.left.deoptimizeArgumentsOnInteractionAtPath(interaction, path, recursionTracker);
+		this.right.deoptimizeArgumentsOnInteractionAtPath(interaction, path, recursionTracker);
+	}
+
 	deoptimizeCache(): void {
 		if (this.usedBranch) {
 			const unusedBranch = this.usedBranch === this.left ? this.right : this.left;
@@ -63,15 +71,6 @@ export default class LogicalExpression extends NodeBase implements Deoptimizable
 		} else {
 			usedBranch.deoptimizePath(path);
 		}
-	}
-
-	deoptimizeThisOnInteractionAtPath(
-		interaction: NodeInteractionWithThisArg,
-		path: ObjectPath,
-		recursionTracker: PathTracker
-	): void {
-		this.left.deoptimizeThisOnInteractionAtPath(interaction, path, recursionTracker);
-		this.right.deoptimizeThisOnInteractionAtPath(interaction, path, recursionTracker);
 	}
 
 	getLiteralValueAtPath(

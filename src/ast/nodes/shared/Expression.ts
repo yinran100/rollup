@@ -1,11 +1,7 @@
 import { DeoptimizableEntity } from '../../DeoptimizableEntity';
 import { WritableEntity } from '../../Entity';
 import { HasEffectsContext, InclusionContext } from '../../ExecutionContext';
-import {
-	NodeInteraction,
-	NodeInteractionCalled,
-	NodeInteractionWithThisArg
-} from '../../NodeInteractions';
+import { NodeInteraction, NodeInteractionCalled } from '../../NodeInteractions';
 import { ObjectPath, PathTracker, UNKNOWN_PATH } from '../../utils/PathTracker';
 import { LiteralValue } from '../Literal';
 import SpreadElement from '../SpreadElement';
@@ -26,15 +22,15 @@ export interface InclusionOptions {
 export class ExpressionEntity implements WritableEntity {
 	included = false;
 
-	deoptimizePath(_path: ObjectPath): void {}
-
-	deoptimizeThisOnInteractionAtPath(
-		{ thisArg }: NodeInteractionWithThisArg,
+	deoptimizeArgumentsOnInteractionAtPath(
+		{ thisArg }: NodeInteraction,
 		_path: ObjectPath,
 		_recursionTracker: PathTracker
 	): void {
 		thisArg!.deoptimizePath(UNKNOWN_PATH);
 	}
+
+	deoptimizePath(_path: ObjectPath): void {}
 
 	/**
 	 * If possible it returns a stringifyable literal value for this node that can be used

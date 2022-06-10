@@ -1,12 +1,11 @@
 import Module, { AstContext } from '../../Module';
 import type { DeoptimizableEntity } from '../DeoptimizableEntity';
 import { createInclusionContext, HasEffectsContext, InclusionContext } from '../ExecutionContext';
-import type { NodeInteractionCalled, NodeInteractionWithThisArg } from '../NodeInteractions';
+import type { NodeInteraction, NodeInteractionCalled } from '../NodeInteractions';
 import {
 	INTERACTION_ACCESSED,
 	INTERACTION_ASSIGNED,
-	INTERACTION_CALLED,
-	NodeInteraction
+	INTERACTION_CALLED
 } from '../NodeInteractions';
 import type ExportDefaultDeclaration from '../nodes/ExportDefaultDeclaration';
 import type Identifier from '../nodes/Identifier';
@@ -64,6 +63,22 @@ export default class LocalVariable extends Variable {
 		}
 	}
 
+	deoptimizeArgumentsOnInteractionAtPath(
+		interaction: NodeInteraction,
+		path: ObjectPath,
+		recursionTracker: PathTracker
+	): void {
+		if (this.isReassigned || !this.init) {
+			return interaction.thisArg?.deoptimizePath(UNKNOWN_PATH);
+		}
+		recursionTracker.withTrackedEntityAtPath(
+			path,
+			this.init,
+			() => this.init!.deoptimizeArgumentsOnInteractionAtPath(interaction, path, recursionTracker),
+			undefined
+		);
+	}
+
 	deoptimizePath(path: ObjectPath): void {
 		if (
 			this.isReassigned ||
@@ -84,22 +99,6 @@ export default class LocalVariable extends Variable {
 		} else {
 			this.init?.deoptimizePath(path);
 		}
-	}
-
-	deoptimizeThisOnInteractionAtPath(
-		interaction: NodeInteractionWithThisArg,
-		path: ObjectPath,
-		recursionTracker: PathTracker
-	): void {
-		if (this.isReassigned || !this.init) {
-			return interaction.thisArg.deoptimizePath(UNKNOWN_PATH);
-		}
-		recursionTracker.withTrackedEntityAtPath(
-			path,
-			this.init,
-			() => this.init!.deoptimizeThisOnInteractionAtPath(interaction, path, recursionTracker),
-			undefined
-		);
 	}
 
 	getLiteralValueAtPath(

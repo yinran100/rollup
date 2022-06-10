@@ -4,8 +4,7 @@ import {
 	INTERACTION_ASSIGNED,
 	INTERACTION_CALLED,
 	NodeInteraction,
-	NodeInteractionCalled,
-	NodeInteractionWithThisArg
+	NodeInteractionCalled
 } from '../../NodeInteractions';
 import { type ObjectPath, type PathTracker, UNKNOWN_PATH } from '../../utils/PathTracker';
 import {
@@ -21,6 +20,34 @@ export default abstract class CallExpressionBase extends NodeBase implements Deo
 	protected returnExpression: ExpressionEntity | null = null;
 	private readonly deoptimizableDependentExpressions: DeoptimizableEntity[] = [];
 	private readonly expressionsToBeDeoptimized = new Set<ExpressionEntity>();
+
+	deoptimizeArgumentsOnInteractionAtPath(
+		interaction: NodeInteraction,
+		path: ObjectPath,
+		recursionTracker: PathTracker
+	): void {
+		const { thisArg } = interaction;
+		const returnExpression = this.getReturnExpression(recursionTracker);
+		if (returnExpression === UNKNOWN_EXPRESSION) {
+			thisArg?.deoptimizePath(UNKNOWN_PATH);
+		} else {
+			recursionTracker.withTrackedEntityAtPath(
+				path,
+				returnExpression,
+				() => {
+					if (thisArg) {
+						this.expressionsToBeDeoptimized.add(thisArg);
+					}
+					returnExpression.deoptimizeArgumentsOnInteractionAtPath(
+						interaction,
+						path,
+						recursionTracker
+					);
+				},
+				undefined
+			);
+		}
+	}
 
 	deoptimizeCache(): void {
 		if (this.returnExpression !== UNKNOWN_EXPRESSION) {
@@ -44,27 +71,6 @@ export default abstract class CallExpressionBase extends NodeBase implements Deo
 		const returnExpression = this.getReturnExpression();
 		if (returnExpression !== UNKNOWN_EXPRESSION) {
 			returnExpression.deoptimizePath(path);
-		}
-	}
-
-	deoptimizeThisOnInteractionAtPath(
-		interaction: NodeInteractionWithThisArg,
-		path: ObjectPath,
-		recursionTracker: PathTracker
-	): void {
-		const returnExpression = this.getReturnExpression(recursionTracker);
-		if (returnExpression === UNKNOWN_EXPRESSION) {
-			interaction.thisArg.deoptimizePath(UNKNOWN_PATH);
-		} else {
-			recursionTracker.withTrackedEntityAtPath(
-				path,
-				returnExpression,
-				() => {
-					this.expressionsToBeDeoptimized.add(interaction.thisArg);
-					returnExpression.deoptimizeThisOnInteractionAtPath(interaction, path, recursionTracker);
-				},
-				undefined
-			);
 		}
 	}
 

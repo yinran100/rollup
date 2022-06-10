@@ -1,8 +1,4 @@
-import {
-	INTERACTION_CALLED,
-	NodeInteraction,
-	NodeInteractionWithThisArg
-} from '../../NodeInteractions';
+import { INTERACTION_CALLED, NodeInteraction } from '../../NodeInteractions';
 import { ObjectPath, ObjectPathKey, UNKNOWN_PATH } from '../../utils/PathTracker';
 import { ExpressionEntity, LiteralValueOrUnknown, UnknownValue } from './Expression';
 import {
@@ -20,12 +16,12 @@ const isInteger = (prop: ObjectPathKey): boolean => typeof prop === 'string' && 
 // will improve tree-shaking for out-of-bounds array properties
 const OBJECT_PROTOTYPE_FALLBACK: ExpressionEntity =
 	new (class ObjectPrototypeFallbackExpression extends ExpressionEntity {
-		deoptimizeThisOnInteractionAtPath(
-			{ type, thisArg }: NodeInteractionWithThisArg,
+		deoptimizeArgumentsOnInteractionAtPath(
+			{ type, thisArg }: NodeInteraction,
 			path: ObjectPath
 		): void {
 			if (type === INTERACTION_CALLED && path.length === 1 && !isInteger(path[0])) {
-				thisArg.deoptimizePath(UNKNOWN_PATH);
+				thisArg?.deoptimizePath(UNKNOWN_PATH);
 			}
 		}
 

@@ -5,7 +5,7 @@ import { renderCallArguments } from '../../utils/renderCallArguments';
 import { type NodeRenderOptions, type RenderOptions } from '../../utils/renderHelpers';
 import type { DeoptimizableEntity } from '../DeoptimizableEntity';
 import type { HasEffectsContext, InclusionContext } from '../ExecutionContext';
-import { INTERACTION_CALLED, NodeInteractionWithThisArg } from '../NodeInteractions';
+import { INTERACTION_CALLED, NodeInteraction } from '../NodeInteractions';
 import {
 	EMPTY_PATH,
 	type PathTracker,
@@ -120,8 +120,8 @@ export default class CallExpression extends CallExpressionBase implements Deopti
 	protected applyDeoptimizations(): void {
 		this.deoptimized = true;
 		if (this.interaction.thisArg) {
-			this.callee.deoptimizeThisOnInteractionAtPath(
-				this.interaction as NodeInteractionWithThisArg,
+			this.callee.deoptimizeArgumentsOnInteractionAtPath(
+				this.interaction as NodeInteraction,
 				EMPTY_PATH,
 				SHARED_RECURSION_TRACKER
 			);

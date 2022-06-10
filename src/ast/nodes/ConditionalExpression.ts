@@ -10,11 +10,7 @@ import {
 import { removeAnnotations } from '../../utils/treeshakeNode';
 import { DeoptimizableEntity } from '../DeoptimizableEntity';
 import { HasEffectsContext, InclusionContext } from '../ExecutionContext';
-import {
-	NodeInteraction,
-	NodeInteractionCalled,
-	NodeInteractionWithThisArg
-} from '../NodeInteractions';
+import { NodeInteraction, NodeInteractionCalled } from '../NodeInteractions';
 import {
 	EMPTY_PATH,
 	ObjectPath,
@@ -38,6 +34,15 @@ export default class ConditionalExpression extends NodeBase implements Deoptimiz
 	private isBranchResolutionAnalysed = false;
 	private usedBranch: ExpressionNode | null = null;
 
+	deoptimizeArgumentsOnInteractionAtPath(
+		interaction: NodeInteraction,
+		path: ObjectPath,
+		recursionTracker: PathTracker
+	): void {
+		this.consequent.deoptimizeArgumentsOnInteractionAtPath(interaction, path, recursionTracker);
+		this.alternate.deoptimizeArgumentsOnInteractionAtPath(interaction, path, recursionTracker);
+	}
+
 	deoptimizeCache(): void {
 		if (this.usedBranch !== null) {
 			const unusedBranch = this.usedBranch === this.consequent ? this.alternate : this.consequent;
@@ -57,15 +62,6 @@ export default class ConditionalExpression extends NodeBase implements Deoptimiz
 		} else {
 			usedBranch.deoptimizePath(path);
 		}
-	}
-
-	deoptimizeThisOnInteractionAtPath(
-		interaction: NodeInteractionWithThisArg,
-		path: ObjectPath,
-		recursionTracker: PathTracker
-	): void {
-		this.consequent.deoptimizeThisOnInteractionAtPath(interaction, path, recursionTracker);
-		this.alternate.deoptimizeThisOnInteractionAtPath(interaction, path, recursionTracker);
 	}
 
 	getLiteralValueAtPath(

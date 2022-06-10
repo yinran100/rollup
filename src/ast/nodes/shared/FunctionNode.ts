@@ -1,9 +1,5 @@
 import { type HasEffectsContext, type InclusionContext } from '../../ExecutionContext';
-import {
-	INTERACTION_CALLED,
-	NodeInteraction,
-	NodeInteractionWithThisArg
-} from '../../NodeInteractions';
+import { INTERACTION_CALLED, NodeInteraction } from '../../NodeInteractions';
 import FunctionScope from '../../scopes/FunctionScope';
 import { type ObjectPath, PathTracker } from '../../utils/PathTracker';
 import BlockStatement from '../BlockStatement';
@@ -28,13 +24,13 @@ export default class FunctionNode extends FunctionBase {
 		this.scope = new FunctionScope(parentScope, this.context);
 	}
 
-	deoptimizeThisOnInteractionAtPath(
-		interaction: NodeInteractionWithThisArg,
+	deoptimizeArgumentsOnInteractionAtPath(
+		interaction: NodeInteraction,
 		path: ObjectPath,
 		recursionTracker: PathTracker
 	): void {
-		super.deoptimizeThisOnInteractionAtPath(interaction, path, recursionTracker);
-		if (interaction.type === INTERACTION_CALLED && path.length === 0) {
+		super.deoptimizeArgumentsOnInteractionAtPath(interaction, path, recursionTracker);
+		if (interaction.type === INTERACTION_CALLED && path.length === 0 && interaction.thisArg) {
 			this.scope.thisVariable.addEntityToBeDeoptimized(interaction.thisArg);
 		}
 	}
